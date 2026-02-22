@@ -1,9 +1,128 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo, memo } from "react";
 import { useAppStore } from "@/lib/store";
-import { selectedCountForFile, getFileExtension } from "@/lib/utils";
-import type { UploadedFile } from "@/lib/types";
+import { getFileExtension } from "@/lib/utils";
+import type { UploadedFile, QueueItem } from "@/lib/types";
+
+interface FileCardProps {
+  file: UploadedFile;
+  index: number;
+  isActive: boolean;
+  isFirst: boolean;
+  isLast: boolean;
+  isMovingUp: boolean;
+  isMovingDown: boolean;
+  selectedCount: number;
+  isDragging: boolean;
+  onSelect: (id: string) => void;
+  onRemove: (id: string) => void;
+  onMoveUp: (idx: number) => void;
+  onMoveDown: (idx: number) => void;
+  onDragHandleStart: (idx: number, e: React.DragEvent) => void;
+  onDragHandleEnd: () => void;
+}
+
+const FileCard = memo(function FileCard({
+  file,
+  index,
+  isActive,
+  isFirst,
+  isLast,
+  isMovingUp,
+  isMovingDown,
+  selectedCount,
+  isDragging,
+  onSelect,
+  onRemove,
+  onMoveUp,
+  onMoveDown,
+  onDragHandleStart,
+  onDragHandleEnd,
+}: FileCardProps) {
+  const showToast = useAppStore((s) => s.showToast);
+
+  return (
+    <div
+      className={`file-card ${isActive ? "active" : ""} ${isDragging ? "dragging" : ""}`}
+      data-idx={index}
+      onClick={() => onSelect(file.file_id)}
+      onDragEnter={(e) => {
+        if (!isDragging) {
+          e.currentTarget.classList.add("drag-over");
+        }
+      }}
+      onDragLeave={(e) => {
+        if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+          e.currentTarget.classList.remove("drag-over");
+        }
+      }}
+      onDragOver={(e) => e.preventDefault()}
+    >
+      <div className="file-order-btns">
+        <button
+          type="button"
+          className={`order-btn ${isMovingUp ? "loading" : ""}`}
+          onClick={(e) => {
+            e.stopPropagation();
+            onMoveUp(index);
+          }}
+          title="Move up"
+          disabled={isFirst || isMovingUp || isMovingDown}
+        >
+          {isMovingUp ? <span className="inline-spinner" aria-hidden /> : "↑"}
+        </button>
+        <button
+          type="button"
+          className={`order-btn ${isMovingDown ? "loading" : ""}`}
+          onClick={(e) => {
+            e.stopPropagation();
+            onMoveDown(index);
+          }}
+          title="Move down"
+          disabled={isLast || isMovingUp || isMovingDown}
+        >
+          {isMovingDown ? <span className="inline-spinner" aria-hidden /> : "↓"}
+        </button>
+      </div>
+      <div
+        className="file-drag-handle"
+        draggable
+        onDragStart={(e) => onDragHandleStart(index, e)}
+        onDragEnd={onDragHandleEnd}
+      >
+        ⋮⋮
+      </div>
+      <div className="file-icon">{getFileExtension(file.original_name)}</div>
+      <div className="file-info">
+        <div className="file-name">{file.original_name}</div>
+        <div className="file-meta">
+          {selectedCount}/{file.page_count} selected
+        </div>
+      </div>
+      <button
+        type="button"
+        className="file-delete-btn"
+        onClick={(e) => {
+          e.stopPropagation();
+          onRemove(file.file_id);
+          showToast("File removed");
+        }}
+        title="Remove file"
+      >
+        ×
+      </button>
+    </div>
+  );
+});
+
+function buildSelectedCountMap(queue: QueueItem[]): Map<string, number> {
+  const map = new Map<string, number>();
+  for (const q of queue) {
+    map.set(q.file_id, (map.get(q.file_id) || 0) + 1);
+  }
+  return map;
+}
 
 export function Sidebar() {
   const files = useAppStore((s) => s.files);
@@ -24,6 +143,11 @@ export function Sidebar() {
   });
   const [merging, setMerging] = useState(false);
   const [draggedFileIdx, setDraggedFileIdx] = useState<number | null>(null);
+  const [moving, setMoving] = useState<{ idx: number; dir: "up" | "down" } | null>(
+    null
+  );
+
+  const selectedCountMap = useMemo(() => buildSelectedCountMap(queue), [queue]);
 
   const handleUpload = useCallback(async (fileList: FileList | null) => {
     if (!fileList?.length) return;
@@ -122,6 +246,43 @@ export function Sidebar() {
     }
   }, []);
 
+  const handleDragHandleStart = useCallback(
+    (idx: number, e: React.DragEvent) => {
+      setDraggedFileIdx(idx);
+      e.dataTransfer.effectAllowed = "move";
+      e.dataTransfer.setData("text/plain", String(idx));
+      (e.target as HTMLElement)
+        .closest(".file-card")
+        ?.classList.add("dragging");
+    },
+    []
+  );
+
+  const handleDragHandleEnd = useCallback(() => {
+    document
+      .querySelectorAll(".file-card.dragging, .file-card.drag-over")
+      .forEach((c) => c.classList.remove("dragging", "drag-over"));
+    setDraggedFileIdx(null);
+  }, []);
+
+  const handleMoveUp = useCallback(
+    (idx: number) => {
+      setMoving({ idx, dir: "up" });
+      moveFileUp(idx);
+      setTimeout(() => setMoving(null), 180);
+    },
+    [moveFileUp]
+  );
+
+  const handleMoveDown = useCallback(
+    (idx: number) => {
+      setMoving({ idx, dir: "down" });
+      moveFileDown(idx);
+      setTimeout(() => setMoving(null), 180);
+    },
+    [moveFileDown]
+  );
+
   return (
     <aside className="left-panel" id="left-panel">
       <div className="panel-header">
@@ -201,102 +362,24 @@ export function Sidebar() {
         }}
       >
         {files.map((f, i) => (
-          <div
+          <FileCard
             key={f.file_id}
-            className={`file-card ${activeId === f.file_id ? "active" : ""} ${draggedFileIdx === i ? "dragging" : ""}`}
-            data-idx={i}
-            onClick={() => setActiveId(f.file_id)}
-            onDragEnter={(e) => {
-              if (draggedFileIdx !== null && draggedFileIdx !== i) {
-                e.currentTarget.classList.add("drag-over");
-              }
-            }}
-            onDragLeave={(e) => {
-              if (!e.currentTarget.contains(e.relatedTarget as Node)) {
-                e.currentTarget.classList.remove("drag-over");
-              }
-            }}
-            onDragOver={(e) => e.preventDefault()}
-            onDrop={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              e.currentTarget.classList.remove("drag-over");
-              if (draggedFileIdx === null || draggedFileIdx === i) return;
-              reorderFiles(draggedFileIdx, i);
-              setDraggedFileIdx(null);
-            }}
-          >
-            <div className="file-order-btns">
-              <button
-                type="button"
-                className="order-btn"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  moveFileUp(i);
-                }}
-                title="Move up"
-                disabled={i === 0}
-              >
-                ↑
-              </button>
-              <button
-                type="button"
-                className="order-btn"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  moveFileDown(i);
-                }}
-                title="Move down"
-                disabled={i === files.length - 1}
-              >
-                ↓
-              </button>
-            </div>
-            <div
-              className="file-drag-handle"
-              draggable
-              onDragStart={(e) => {
-                setDraggedFileIdx(i);
-                e.dataTransfer.effectAllowed = "move";
-                e.dataTransfer.setData("text/plain", String(i));
-                e.currentTarget
-                  .closest(".file-card")
-                  ?.classList.add("dragging");
-              }}
-              onDragEnd={() => {
-                document
-                  .querySelectorAll(
-                    ".file-card.dragging, .file-card.drag-over"
-                  )
-                  .forEach((c) => c.classList.remove("dragging", "drag-over"));
-                setDraggedFileIdx(null);
-              }}
-            >
-              ⋮⋮
-            </div>
-            <div className="file-icon">
-              {getFileExtension(f.original_name)}
-            </div>
-            <div className="file-info">
-              <div className="file-name">{f.original_name}</div>
-              <div className="file-meta">
-                {selectedCountForFile(queue, f.file_id)}/{f.page_count}{" "}
-                selected
-              </div>
-            </div>
-            <button
-              type="button"
-              className="file-delete-btn"
-              onClick={(e) => {
-                e.stopPropagation();
-                removeFile(f.file_id);
-                showToast("File removed");
-              }}
-              title="Remove file"
-            >
-              ×
-            </button>
-          </div>
+            file={f}
+            index={i}
+            isActive={activeId === f.file_id}
+            isFirst={i === 0}
+            isLast={i === files.length - 1}
+            isMovingUp={moving?.idx === i && moving.dir === "up"}
+            isMovingDown={moving?.idx === i && moving.dir === "down"}
+            selectedCount={selectedCountMap.get(f.file_id) ?? 0}
+            isDragging={draggedFileIdx === i}
+            onSelect={setActiveId}
+            onRemove={removeFile}
+            onMoveUp={handleMoveUp}
+            onMoveDown={handleMoveDown}
+            onDragHandleStart={handleDragHandleStart}
+            onDragHandleEnd={handleDragHandleEnd}
+          />
         ))}
       </div>
       <div className="merge-zone">

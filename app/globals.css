@@ -545,6 +545,21 @@ body.empty-state .merge-zone {
   border-color: var(--accent);
 }
 
+.order-btn.loading {
+  color: var(--accent);
+  border-color: var(--border-accent);
+  background: var(--accent-soft);
+}
+
+.inline-spinner {
+  width: 10px;
+  height: 10px;
+  border: 1.5px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.55s linear infinite;
+}
+
 .order-btn:disabled {
   opacity: 0.25;
   cursor: not-allowed;

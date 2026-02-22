@@ -31,13 +31,51 @@ interface AppActions {
 export type AppStore = AppState & AppActions;
 
 function sortQueueByFileOrder(queue: QueueItem[], files: UploadedFile[]): QueueItem[] {
-  const fileOrder = new Map(files.map((f, i) => [f.file_id, i]));
-  return [...queue].sort((a, b) => {
-    const fa = fileOrder.get(a.file_id) ?? 0;
-    const fb = fileOrder.get(b.file_id) ?? 0;
-    if (fa !== fb) return fa - fb;
-    return a.page_index - b.page_index;
-  });
+  if (queue.length < 2 || files.length < 2) return queue;
+
+  // Bucket pages by file, then rebuild queue in file-order.
+  const byFile = new Map<string, QueueItem[]>();
+  for (const item of queue) {
+    const group = byFile.get(item.file_id);
+    if (group) group.push(item);
+    else byFile.set(item.file_id, [item]);
+  }
+
+  // Keep pages in ascending page order within each file.
+  for (const group of byFile.values()) {
+    let needsSort = false;
+    for (let i = 1; i < group.length; i++) {
+      if (group[i - 1].page_index > group[i].page_index) {
+        needsSort = true;
+        break;
+      }
+    }
+    if (needsSort) {
+      group.sort((a, b) => a.page_index - b.page_index);
+    }
+  }
+
+  const next: QueueItem[] = [];
+  const knownFileIds = new Set<string>();
+  for (const f of files) {
+    knownFileIds.add(f.file_id);
+    const group = byFile.get(f.file_id);
+    if (group?.length) next.push(...group);
+  }
+
+  // Keep any queue item whose file no longer exists at the end (defensive).
+  for (const [fileId, group] of byFile) {
+    if (!knownFileIds.has(fileId)) next.push(...group);
+  }
+
+  return next;
+}
+
+function hasAnySelectionForFiles(queue: QueueItem[], fileIds: Set<string>) {
+  for (const q of queue) {
+    if (fileIds.has(q.file_id)) return true;
+  }
+  return false;
 }
 
 export const useAppStore = create<AppStore>((set, get) => ({
@@ -75,7 +113,13 @@ export const useAppStore = create<AppStore>((set, get) => ({
       const next = [...s.files];
       const [moved] = next.splice(fromIdx, 1);
       next.splice(Math.min(toIdx, next.length), 0, moved);
-      return { files: next, queue: sortQueueByFileOrder(s.queue, next) };
+      const start = Math.min(fromIdx, toIdx);
+      const end = Math.max(fromIdx, toIdx);
+      const impactedIds = new Set(next.slice(start, end + 1).map((f) => f.file_id));
+      const queue = hasAnySelectionForFiles(s.queue, impactedIds)
+        ? sortQueueByFileOrder(s.queue, next)
+        : s.queue;
+      return { files: next, queue };
     }),
 
   moveFileUp: (idx) => {
@@ -83,7 +127,11 @@ export const useAppStore = create<AppStore>((set, get) => ({
     set((s) => {
       const next = [...s.files];
       [next[idx - 1], next[idx]] = [next[idx], next[idx - 1]];
-      return { files: next, queue: sortQueueByFileOrder(s.queue, next) };
+      const impactedIds = new Set([next[idx - 1].file_id, next[idx].file_id]);
+      const queue = hasAnySelectionForFiles(s.queue, impactedIds)
+        ? sortQueueByFileOrder(s.queue, next)
+        : s.queue;
+      return { files: next, queue };
     });
   },
 
@@ -92,7 +140,11 @@ export const useAppStore = create<AppStore>((set, get) => ({
       if (idx >= s.files.length - 1) return s;
       const next = [...s.files];
       [next[idx], next[idx + 1]] = [next[idx + 1], next[idx]];
-      return { files: next, queue: sortQueueByFileOrder(s.queue, next) };
+      const impactedIds = new Set([next[idx].file_id, next[idx + 1].file_id]);
+      const queue = hasAnySelectionForFiles(s.queue, impactedIds)
+        ? sortQueueByFileOrder(s.queue, next)
+        : s.queue;
+      return { files: next, queue };
     });
   },
 
