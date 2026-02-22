@@ -1,10 +1,29 @@
 "use client";
 
-import { useRef, useMemo, useCallback, memo } from "react";
+import { useRef, useMemo, useCallback, memo, useState, useEffect } from "react";
 import Image from "next/image";
 import { useAppStore } from "@/lib/store";
 import { buildQueueMeta } from "@/lib/utils";
 import type { UploadedFile } from "@/lib/types";
+
+function useContinuousRotation(rotation: number) {
+  const [displayRotation, setDisplayRotation] = useState(rotation);
+  const prevRotationRef = useRef(rotation);
+
+  useEffect(() => {
+    let next = rotation;
+    const prev = prevRotationRef.current;
+
+    // Unwrap modulo-360 values so animation follows the intended turn direction.
+    while (next - prev > 180) next -= 360;
+    while (prev - next > 180) next += 360;
+
+    setDisplayRotation(next);
+    prevRotationRef.current = next;
+  }, [rotation]);
+
+  return displayRotation;
+}
 
 /* ─── Individual page card (grid view) ─── */
 
@@ -39,6 +58,8 @@ const GridPageCard = memo(function GridPageCard({
   onDragOver,
   onDrop,
 }: PageCardProps) {
+  const displayRotation = useContinuousRotation(rotation);
+
   return (
     <div
       className={`page-card ${selected ? "selected" : ""} ${rotation ? "rotated" : ""}`}
@@ -62,7 +83,7 @@ const GridPageCard = memo(function GridPageCard({
           className="thumb-img"
           src={src}
           alt={`Page ${pageIndex + 1}`}
-          style={{ transform: `rotate(${rotation}deg)` }}
+          style={{ transform: `rotate(${displayRotation}deg)` }}
           fill
           sizes="(max-width: 768px) 50vw, 200px"
           unoptimized
@@ -111,6 +132,8 @@ const ReadPageCard = memo(function ReadPageCard({
   queueIndex,
   onToggle,
 }: ReadPageCardProps) {
+  const displayRotation = useContinuousRotation(rotation);
+
   return (
     <div
       className={`read-page ${selected ? "selected" : ""} ${rotation ? "rotated" : ""}`}
@@ -121,7 +144,7 @@ const ReadPageCard = memo(function ReadPageCard({
       <Image
         src={src}
         alt={`Page ${pageIndex + 1}`}
-        style={{ transform: `rotate(${rotation}deg)` }}
+        style={{ transform: `rotate(${displayRotation}deg)` }}
         width={1200}
         height={1600}
         sizes="(max-width: 768px) 100vw, 600px"
