@@ -30,6 +30,16 @@ interface AppActions {
 
 export type AppStore = AppState & AppActions;
 
+function sortQueueByFileOrder(queue: QueueItem[], files: UploadedFile[]): QueueItem[] {
+  const fileOrder = new Map(files.map((f, i) => [f.file_id, i]));
+  return [...queue].sort((a, b) => {
+    const fa = fileOrder.get(a.file_id) ?? 0;
+    const fb = fileOrder.get(b.file_id) ?? 0;
+    if (fa !== fb) return fa - fb;
+    return a.page_index - b.page_index;
+  });
+}
+
 export const useAppStore = create<AppStore>((set, get) => ({
   files: [],
   activeId: null,
@@ -65,7 +75,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
       const next = [...s.files];
       const [moved] = next.splice(fromIdx, 1);
       next.splice(Math.min(toIdx, next.length), 0, moved);
-      return { files: next };
+      return { files: next, queue: sortQueueByFileOrder(s.queue, next) };
     }),
 
   moveFileUp: (idx) => {
@@ -73,7 +83,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
     set((s) => {
       const next = [...s.files];
       [next[idx - 1], next[idx]] = [next[idx], next[idx - 1]];
-      return { files: next };
+      return { files: next, queue: sortQueueByFileOrder(s.queue, next) };
     });
   },
 
@@ -82,7 +92,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
       if (idx >= s.files.length - 1) return s;
       const next = [...s.files];
       [next[idx], next[idx + 1]] = [next[idx + 1], next[idx]];
-      return { files: next };
+      return { files: next, queue: sortQueueByFileOrder(s.queue, next) };
     });
   },
 
