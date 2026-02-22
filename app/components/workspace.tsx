@@ -373,7 +373,7 @@ export function Workspace() {
             <NotebookText className="size-4" />
             Read
           </button>
-          <div className="ws-divider" />
+          {/* <div className="ws-divider" />
           <button
             type="button"
             className="ws-btn"
@@ -381,15 +381,15 @@ export function Workspace() {
             onClick={selectAllPages}
           >
             Select all
-          </button>
-          <button
+          </button> 
+           <button
             type="button"
             className="ws-btn"
             id="btn-clear"
             onClick={clearSelection}
           >
             Clear
-          </button>
+          </button> */}
         </div>
       </div>
       <div className="workspace-canvas" id="workspace-canvas">
