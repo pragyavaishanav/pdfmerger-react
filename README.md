@@ -1,36 +1,65 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# DopeOffice PDF Merger — Next.js
 
-## Getting Started
+A Next.js + TypeScript port of the DopeOffice PDF & Document Studio. Merge PDFs, reorder pages, rotate pages, and download—with the same UI and features as the original Flask app.
 
-First, run the development server:
+## Prerequisites
+
+- **Node.js** 18+
+- **Python 3** with the PDF merger backend (for upload and merge)
+
+The Next.js app proxies `/api/upload` and `/api/merge` to the Python Flask backend. You must run the Python server for full functionality.
+
+## Setup
+
+### 1. Install dependencies
+
+```bash
+npm install
+```
+
+### 2. Start the Python backend
+
+From the project root (or `pdfmerger` folder):
+
+```bash
+cd ../pdfmerger   # or wherever app.py lives
+pip install flask werkzeug PyMuPDF python-docx reportlab
+python app.py
+```
+
+The Python server runs on **http://localhost:8080** by default.
+
+### 3. Start the Next.js dev server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Environment Variables
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- `PYTHON_BACKEND_URL` — Python backend URL (default: `http://localhost:8080`)
 
-## Learn More
+Create a `.env.local` file if you need a different backend URL:
 
-To learn more about Next.js, take a look at the following resources:
+```
+PYTHON_BACKEND_URL=http://localhost:8080
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Features
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- Upload PDF and DOCX files (drag & drop or click)
+- Reorder files and pages via drag & drop
+- Rotate pages
+- Grid and Read view modes
+- Light/Dark theme
+- Merge selected pages and download
 
-## Deploy on Vercel
+## Project Structure
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- `app/page.tsx` — Main PDF merger UI (client component)
+- `app/api/upload/route.ts` — Proxies uploads to Python backend
+- `app/api/merge/route.ts` — Proxies merge requests to Python backend
+- `app/globals.css` — DopeOffice styles (Industrial Blueprint Luxe theme)
+- `lib/types.ts` — TypeScript types for uploaded files and merge payload
