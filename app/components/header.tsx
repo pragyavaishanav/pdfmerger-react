@@ -69,10 +69,10 @@ export function Header() {
             onClick={toggleTheme}
           >
             <span className="theme-toggle-icon" aria-hidden>
-              {theme === "light" ? "◐" : "☼"}
+              {theme === "dark" ? "◐" : "☼"}
             </span>
             <span className="theme-toggle-label">
-              {theme === "light" ? "Dark" : "Light"}
+              {theme === "dark" ? "Dark" : "Light"}
             </span>
           </button>
         </div>

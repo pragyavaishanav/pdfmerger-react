@@ -780,7 +780,6 @@ body.empty-state .merge-zone {
 .ws-title {
   font-family: var(--font-display);
   letter-spacing: 2px;
-  text-transform: uppercase;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

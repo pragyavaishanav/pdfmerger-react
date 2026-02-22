@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useAppStore } from "@/lib/store";
 import { buildQueueMeta } from "@/lib/utils";
 import type { UploadedFile } from "@/lib/types";
+import { LayoutGrid, NotebookText, RotateCcw } from "lucide-react";
 
 function useContinuousRotation(rotation: number) {
   const [displayRotation, setDisplayRotation] = useState(rotation);
@@ -99,7 +100,7 @@ const GridPageCard = memo(function GridPageCard({
             }}
             title="Rotate left"
           >
-            ↺
+            <RotateCcw className="size-4" />
           </div>
         </div>
       </div>
@@ -359,44 +360,7 @@ export function Workspace() {
             title="Grid view"
             onClick={() => setViewMode("grid")}
           >
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-              <rect
-                x="1"
-                y="1"
-                width="5.5"
-                height="5.5"
-                rx="1.2"
-                stroke="currentColor"
-                strokeWidth="1.3"
-              />
-              <rect
-                x="9.5"
-                y="1"
-                width="5.5"
-                height="5.5"
-                rx="1.2"
-                stroke="currentColor"
-                strokeWidth="1.3"
-              />
-              <rect
-                x="1"
-                y="9.5"
-                width="5.5"
-                height="5.5"
-                rx="1.2"
-                stroke="currentColor"
-                strokeWidth="1.3"
-              />
-              <rect
-                x="9.5"
-                y="9.5"
-                width="5.5"
-                height="5.5"
-                rx="1.2"
-                stroke="currentColor"
-                strokeWidth="1.3"
-              />
-            </svg>
+            <LayoutGrid className="size-4" />
             Grid
           </button>
           <button
@@ -406,26 +370,7 @@ export function Workspace() {
             title="Read view"
             onClick={() => setViewMode("read")}
           >
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-              <rect
-                x="1"
-                y="1.5"
-                width="14"
-                height="4.5"
-                rx="1.2"
-                stroke="currentColor"
-                strokeWidth="1.3"
-              />
-              <rect
-                x="1"
-                y="10"
-                width="14"
-                height="4.5"
-                rx="1.2"
-                stroke="currentColor"
-                strokeWidth="1.3"
-              />
-            </svg>
+            <NotebookText className="size-4" />
             Read
           </button>
           <div className="ws-divider" />
