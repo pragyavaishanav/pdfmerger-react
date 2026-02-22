@@ -178,6 +178,7 @@ export function Sidebar() {
 
         const uploaded: UploadedFile = {
           ...data,
+          original_name: f.name,
           pages: data.thumbnails.map(() => ({ rotation: 0 })),
         };
         const pages = data.thumbnails.map((_: string, idx: number) => ({

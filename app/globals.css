@@ -774,12 +774,15 @@ body.empty-state .merge-zone {
 .ws-title-block {
   flex: 1;
   min-width: 0;
-  margin-right: 16px;
+  margin-right: 24px;
 }
 
 .ws-title {
-  font-family: var(--font-display);
-  letter-spacing: 2px;
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.2px;
+  text-transform: none;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
