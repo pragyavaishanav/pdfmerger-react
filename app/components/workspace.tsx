@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useMemo, useCallback, memo } from "react";
+import Image from "next/image";
 import { useAppStore } from "@/lib/store";
 import { buildQueueMeta } from "@/lib/utils";
 import type { UploadedFile } from "@/lib/types";
@@ -57,13 +58,15 @@ const GridPageCard = memo(function GridPageCard({
       onDrop={(e) => onDrop(fileId, pageIndex, e)}
     >
       <div className="thumb-wrap">
-        <img
+        <Image
           className="thumb-img"
           src={src}
           alt={`Page ${pageIndex + 1}`}
           style={{ transform: `rotate(${rotation}deg)` }}
+          fill
+          sizes="(max-width: 768px) 50vw, 200px"
+          unoptimized
           loading="lazy"
-          decoding="async"
         />
         <div className="rotation-badge">{rotation}°</div>
         <div className="page-controls">
@@ -115,12 +118,15 @@ const ReadPageCard = memo(function ReadPageCard({
       data-page-index={pageIndex}
       onClick={() => onToggle(fileId, pageIndex)}
     >
-      <img
+      <Image
         src={src}
         alt={`Page ${pageIndex + 1}`}
         style={{ transform: `rotate(${rotation}deg)` }}
+        width={1200}
+        height={1600}
+        sizes="(max-width: 768px) 100vw, 600px"
+        unoptimized
         loading="lazy"
-        decoding="async"
       />
       <div className="rotation-badge">{rotation}°</div>
       {selected && queueIndex && (
