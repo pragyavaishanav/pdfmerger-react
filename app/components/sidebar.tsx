@@ -4,6 +4,7 @@ import { useState, useCallback, useMemo, memo } from "react";
 import { useAppStore } from "@/lib/store";
 import { getFileExtension } from "@/lib/utils";
 import type { UploadedFile, QueueItem } from "@/lib/types";
+import { ArrowDown, ArrowUp, Download, Plus } from "lucide-react";
 
 interface FileCardProps {
   file: UploadedFile;
@@ -19,8 +20,8 @@ interface FileCardProps {
   onRemove: (id: string) => void;
   onMoveUp: (idx: number) => void;
   onMoveDown: (idx: number) => void;
-  onDragHandleStart: (idx: number, e: React.DragEvent) => void;
-  onDragHandleEnd: () => void;
+  // onDragHandleStart: (idx: number, e: React.DragEvent) => void;
+  // onDragHandleEnd: () => void;
 }
 
 const FileCard = memo(function FileCard({
@@ -37,8 +38,8 @@ const FileCard = memo(function FileCard({
   onRemove,
   onMoveUp,
   onMoveDown,
-  onDragHandleStart,
-  onDragHandleEnd,
+  // onDragHandleStart,
+  // onDragHandleEnd,
 }: FileCardProps) {
   const showToast = useAppStore((s) => s.showToast);
 
@@ -70,7 +71,7 @@ const FileCard = memo(function FileCard({
           title="Move up"
           disabled={isFirst || isMovingUp || isMovingDown}
         >
-          {isMovingUp ? <span className="inline-spinner" aria-hidden /> : "↑"}
+          {isMovingUp ? <span className="inline-spinner" aria-hidden /> : <ArrowUp className="size-2" />}
         </button>
         <button
           type="button"
@@ -82,17 +83,17 @@ const FileCard = memo(function FileCard({
           title="Move down"
           disabled={isLast || isMovingUp || isMovingDown}
         >
-          {isMovingDown ? <span className="inline-spinner" aria-hidden /> : "↓"}
+          {isMovingDown ? <span className="inline-spinner" aria-hidden /> : <ArrowDown className="size-2" />}
         </button>
       </div>
-      <div
+      {/* <div
         className="file-drag-handle"
         draggable
         onDragStart={(e) => onDragHandleStart(index, e)}
         onDragEnd={onDragHandleEnd}
       >
         ⋮⋮
-      </div>
+      </div> */}
       <div className="file-icon">{getFileExtension(file.original_name)}</div>
       <div className="file-info">
         <div className="file-name">{file.original_name}</div>
@@ -133,7 +134,7 @@ export function Sidebar() {
   const moveFileUp = useAppStore((s) => s.moveFileUp);
   const moveFileDown = useAppStore((s) => s.moveFileDown);
   const setActiveId = useAppStore((s) => s.setActiveId);
-  const showToast = useAppStore((s) => s.showToast);
+  // const showToast = useAppStore((s) => s.showToast);
 
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState({
@@ -246,24 +247,24 @@ export function Sidebar() {
     }
   }, []);
 
-  const handleDragHandleStart = useCallback(
-    (idx: number, e: React.DragEvent) => {
-      setDraggedFileIdx(idx);
-      e.dataTransfer.effectAllowed = "move";
-      e.dataTransfer.setData("text/plain", String(idx));
-      (e.target as HTMLElement)
-        .closest(".file-card")
-        ?.classList.add("dragging");
-    },
-    []
-  );
+  // const handleDragHandleStart = useCallback(
+  //   (idx: number, e: React.DragEvent) => {
+  //     setDraggedFileIdx(idx);
+  //     e.dataTransfer.effectAllowed = "move";
+  //     e.dataTransfer.setData("text/plain", String(idx));
+  //     (e.target as HTMLElement)
+  //       .closest(".file-card")
+  //       ?.classList.add("dragging");
+  //   },
+  //   []
+  // );
 
-  const handleDragHandleEnd = useCallback(() => {
-    document
-      .querySelectorAll(".file-card.dragging, .file-card.drag-over")
-      .forEach((c) => c.classList.remove("dragging", "drag-over"));
-    setDraggedFileIdx(null);
-  }, []);
+  // const handleDragHandleEnd = useCallback(() => {
+  //   document
+  //     .querySelectorAll(".file-card.dragging, .file-card.drag-over")
+  //     .forEach((c) => c.classList.remove("dragging", "drag-over"));
+  //   setDraggedFileIdx(null);
+  // }, []);
 
   const handleMoveUp = useCallback(
     (idx: number) => {
@@ -285,9 +286,9 @@ export function Sidebar() {
 
   return (
     <aside className="left-panel" id="left-panel">
-      <div className="panel-header">
+      {/* <div className="panel-header">
         <h2 className="panel-title">Documents</h2>
-      </div>
+      </div> */}
       <div
         className={`upload-zone ${uploading ? "uploading" : ""}`}
         onClick={() => document.getElementById("file-input")?.click()}
@@ -317,14 +318,7 @@ export function Sidebar() {
           {uploading ? (
             <div className="upload-spinner" />
           ) : (
-            <svg width="22" height="22" viewBox="0 0 40 40" fill="none">
-              <path
-                d="M20 8v24M8 20h24"
-                stroke="currentColor"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-              />
-            </svg>
+            <Plus className="size-6" />
           )}
         </div>
         <span className="upload-text" id="upload-text">
@@ -377,8 +371,8 @@ export function Sidebar() {
             onRemove={removeFile}
             onMoveUp={handleMoveUp}
             onMoveDown={handleMoveDown}
-            onDragHandleStart={handleDragHandleStart}
-            onDragHandleEnd={handleDragHandleEnd}
+            // onDragHandleStart={handleDragHandleStart}
+            // onDragHandleEnd={handleDragHandleEnd}
           />
         ))}
       </div>
@@ -390,9 +384,9 @@ export function Sidebar() {
           onClick={handleMerge}
         >
           <span id="merge-btn-text">
-            {merging ? "Processing..." : "Merge & Download"}
+            {merging ? "Processing..." : `Merge PDF (${queue.length})`}
           </span>
-          <svg
+          {/* <svg
             className="btn-arrow"
             width="16"
             height="16"
@@ -406,7 +400,8 @@ export function Sidebar() {
               strokeLinecap="round"
               strokeLinejoin="round"
             />
-          </svg>
+          </svg> */}
+          <Download className="size-4" />
         </button>
       </div>
     </aside>
