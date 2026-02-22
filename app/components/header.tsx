@@ -44,7 +44,8 @@ export function Header() {
             <DopeofficeLogo />
           </div>
           <span className="logo-text">
-            DOPE<em>OFFICE</em> PDF MERGER
+            {/* DOPE<em>OFFICE</em>  */}
+            PDF MERGER
           </span>
         </div>
         <div className="header-actions">
