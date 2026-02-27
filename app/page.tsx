@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import Link from "next/link";
 import { useAppStore } from "@/lib/store";
 import { Header } from "@/app/components/header";
 import { Sidebar } from "@/app/components/sidebar";
@@ -51,6 +52,14 @@ export default function Home() {
         <Sidebar />
         <Workspace />
       </main>
+
+      <footer className="app-footer">
+        <Link href="/privacy">Privacy Policy</Link>
+        <span className="footer-dot" aria-hidden>&middot;</span>
+        <Link href="/terms">Terms of Service</Link>
+        <span className="footer-dot" aria-hidden>&middot;</span>
+        <Link href="/support">Support</Link>
+      </footer>
 
       <div
         className={`toast ${toast.show ? "show" : ""}`}

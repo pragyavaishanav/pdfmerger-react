@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "DopeOffice — PDF & Document Studio",
+  title: "PDF Merger — Merge & Manage PDFs",
   description: "Merge and manage PDF documents with ease",
 };
 
