@@ -82,7 +82,7 @@ export default function SupportPage() {
       </p>
 
       <Link
-        href="https://forms.gle/jMvBPCqGf3Q1tKsT8"
+        href="https://docs.google.com/forms/d/e/1FAIpQLSdkR44wgU7oUhfMnT8lthbU_wZYK9TLYxXO1l-ti5NGZL580A/viewform?usp=header"
         target="_blank"
         rel="noopener noreferrer"
         style={{
