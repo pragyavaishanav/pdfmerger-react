@@ -213,14 +213,14 @@ export default function PrivacyPolicy() {
         If you have any questions about this Privacy Policy, please contact us
         at{" "}
         <a
-          href="mailto:rahul@dopeoffice.io"
+          href="mailto:rahul@dopeoffice.ai"
           style={{
             color: "var(--accent)",
             textDecoration: "underline",
             textUnderlineOffset: 3,
           }}
         >
-          rahul@dopeoffice.io
+          rahul@dopeoffice.ai
         </a>
         .
       </p>

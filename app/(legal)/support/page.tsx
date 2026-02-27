@@ -131,14 +131,14 @@ export default function SupportPage() {
         <p>
           For urgent technical issues, reach us directly at{" "}
           <a
-            href="mailto:rahul@dopeoffice.io"
+            href="mailto:rahul@dopeoffice.ai"
             style={{
               color: "var(--accent)",
               textDecoration: "underline",
               textUnderlineOffset: 3,
             }}
           >
-            rahul@dopeoffice.io
+            rahul@dopeoffice.ai
           </a>
         </p>
         <p
