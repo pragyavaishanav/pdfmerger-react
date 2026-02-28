@@ -2,6 +2,7 @@ export const runtime = "nodejs"; // Required on Vercel for env vars
 
 import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
+import AzureADProvider from "next-auth/providers/azure-ad";
 
 const handler = NextAuth({
   secret: process.env.NEXTAUTH_SECRET, // Required in production
@@ -16,6 +17,16 @@ const handler = NextAuth({
         },
       },
     }),
+    AzureADProvider({
+        clientId: process.env.MICROSOFT_CLIENT_ID!,
+        clientSecret: process.env.MICROSOFT_CLIENT_SECRET!,
+        tenantId: "common",
+        authorization: {
+          params: {
+            scope: "openid profile email User.Read Files.Read",
+          },
+        },
+      }),
   ],
 
   callbacks: {
