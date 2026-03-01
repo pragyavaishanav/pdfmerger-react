@@ -1,4 +1,5 @@
 "use client";
+import { Button } from "@/components/ui/button";
 import OneDrivePicker from "./one-drive-picker";
 
 import { signIn, signOut, useSession } from "next-auth/react";
@@ -19,16 +20,16 @@ export default function MicrosoftLogin() {
 
   if (!session) {
     return (
-      <button onClick={() => signIn("azure-ad")}>
+      <Button onClick={() => signIn("azure-ad")}>
         Sign in with Microsoft
-      </button>
+      </Button>
     );
   }
 
   return (
     <>
       <p>Signed in as {session.user?.email}</p>
-      <button onClick={() => signOut()}>Sign out</button>
+      <Button onClick={() => signOut()}>Sign out</Button>
       <OneDrivePicker />
     </>
   );

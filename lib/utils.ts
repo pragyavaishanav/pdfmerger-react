@@ -1,4 +1,6 @@
 import type { QueueItem } from "@/lib/types";
+import { ClassValue, clsx } from "clsx";
+import { twMerge } from "tailwind-merge";
 
 export function buildQueueMeta(queue: QueueItem[]) {
   const queueIndexByKey = new Map<string, number>();
@@ -23,4 +25,8 @@ export function isInQueue(queue: QueueItem[], fid: string, pid: number) {
 
 export function getFileExtension(filename: string) {
   return filename.split(".").pop()?.toUpperCase() ?? "";
+}
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs))
 }
