@@ -4,14 +4,18 @@ import { useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { useSession } from "next-auth/react";
 
+export interface OneDriveFile {
+  id: string;
+  name: string;
+  size?: number;
+}
+
 interface DriveItem {
   id: string;
   name: string;
   folder?: { childCount: number };
   file?: { mimeType: string };
   size?: number;
-  "@microsoft.graph.downloadUrl"?: string;
-  parentReference?: { path: string };
 }
 
 interface BreadcrumbItem {
@@ -19,7 +23,11 @@ interface BreadcrumbItem {
   name: string;
 }
 
-export default function OneDrivePicker() {
+interface OneDrivePickerProps {
+  onFilesPicked: (files: OneDriveFile[]) => void;
+}
+
+export default function OneDrivePicker({ onFilesPicked }: OneDrivePickerProps) {
   const { data: session } = useSession();
   const [items, setItems] = useState<DriveItem[]>([]);
   const [loading, setLoading] = useState(false);
@@ -96,14 +104,13 @@ export default function OneDrivePicker() {
     });
   };
 
-  const getSelectedFiles = () => {
-    return items.filter((item) => selected.has(item.id) && item.file);
-  };
-
   const handleConfirm = () => {
-    const files = getSelectedFiles();
-    console.log("Selected PDF files:", files);
+    const pickedFiles: OneDriveFile[] = items
+      .filter((item) => selected.has(item.id) && item.file)
+      .map((item) => ({ id: item.id, name: item.name, size: item.size }));
+
     setIsOpen(false);
+    onFilesPicked(pickedFiles);
   };
 
   const formatSize = (bytes?: number) => {
@@ -131,7 +138,6 @@ export default function OneDrivePicker() {
         background: "#1a1a2e",
       }}
     >
-      {/* Breadcrumbs */}
       <div style={{ display: "flex", gap: 4, marginBottom: 12, flexWrap: "wrap" }}>
         {breadcrumbs.map((crumb, i) => (
           <span key={crumb.id}>
@@ -153,7 +159,6 @@ export default function OneDrivePicker() {
         ))}
       </div>
 
-      {/* Content */}
       {loading && <p style={{ color: "#aaa" }}>Loading...</p>}
       {error && <p style={{ color: "#f66" }}>Error: {error}</p>}
 
@@ -204,7 +209,6 @@ export default function OneDrivePicker() {
         </div>
       )}
 
-      {/* Actions */}
       <div style={{ display: "flex", gap: 8, marginTop: 16, justifyContent: "flex-end" }}>
         <Button variant="outline" onClick={() => setIsOpen(false)}>
           Cancel
